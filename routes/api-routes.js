@@ -3,10 +3,14 @@ const db = require("../models");
 
 // Get last workout - API.getLastWorkout()
 router.get("/api/workouts", (req, res) => {
-  // Find all workouts
-  // Sort ascending by day so getLastWorkout() can use the last entry
+  // First, add totalDuration field to all the workouts in the db
+  // then, sort the response (an array of the updated workouts) ascending by day so getLastWorkout() can use the last entry
   // Send back the workouts as JSON
-  db.Workout.find({})
+  db.Workout.aggregate([{
+    $addFields: {
+      totalDuration: { $sum: "$exercises.duration" }
+    }
+  }])
   .sort({ day: 1 })
   .then(dbWorkouts => {
     res.json(dbWorkouts);
